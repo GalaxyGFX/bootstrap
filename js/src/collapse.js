@@ -1,20 +1,18 @@
 /**
  * --------------------------------------------------------------------------
- * Bootstrap (v5.1.3): collapse.js
+ * Bootstrap collapse.js
  * Licensed under MIT (https://github.com/twbs/bootstrap/blob/main/LICENSE)
  * --------------------------------------------------------------------------
  */
 
+import BaseComponent from './base-component.js'
+import EventHandler from './dom/event-handler.js'
+import SelectorEngine from './dom/selector-engine.js'
 import {
   defineJQueryPlugin,
   getElement,
-  getElementFromSelector,
-  getSelectorFromElement,
   reflow
-} from './util/index'
-import EventHandler from './dom/event-handler'
-import SelectorEngine from './dom/selector-engine'
-import BaseComponent from './base-component'
+} from './util/index.js'
 
 /**
  * Constants
@@ -45,13 +43,13 @@ const SELECTOR_ACTIVES = '.collapse.show, .collapse.collapsing'
 const SELECTOR_DATA_TOGGLE = '[data-bs-toggle="collapse"]'
 
 const Default = {
-  toggle: true,
-  parent: null
+  parent: null,
+  toggle: true
 }
 
 const DefaultType = {
-  toggle: 'boolean',
-  parent: '(null|element)'
+  parent: '(null|element)',
+  toggle: 'boolean'
 }
 
 /**
@@ -68,9 +66,9 @@ class Collapse extends BaseComponent {
     const toggleList = SelectorEngine.find(SELECTOR_DATA_TOGGLE)
 
     for (const elem of toggleList) {
-      const selector = getSelectorFromElement(elem)
+      const selector = SelectorEngine.getSelectorFromElement(elem)
       const filterElement = SelectorEngine.find(selector)
-        .filter(foundElem => foundElem === this._element)
+        .filter(foundElement => foundElement === this._element)
 
       if (selector !== null && filterElement.length) {
         this._triggerArray.push(elem)
@@ -185,9 +183,9 @@ class Collapse extends BaseComponent {
     this._element.classList.remove(CLASS_NAME_COLLAPSE, CLASS_NAME_SHOW)
 
     for (const trigger of this._triggerArray) {
-      const elem = getElementFromSelector(trigger)
+      const element = SelectorEngine.getElementFromSelector(trigger)
 
-      if (elem && !this._isShown(elem)) {
+      if (element && !this._isShown(element)) {
         this._addAriaAndCollapsedClass([trigger], false)
       }
     }
@@ -229,7 +227,7 @@ class Collapse extends BaseComponent {
     const children = this._getFirstLevelChildren(SELECTOR_DATA_TOGGLE)
 
     for (const element of children) {
-      const selected = getElementFromSelector(element)
+      const selected = SelectorEngine.getElementFromSelector(element)
 
       if (selected) {
         this._addAriaAndCollapsedClass([element], this._isShown(selected))
@@ -240,7 +238,7 @@ class Collapse extends BaseComponent {
   _getFirstLevelChildren(selector) {
     const children = SelectorEngine.find(CLASS_NAME_DEEPER_CHILDREN, this._config.parent)
     // remove children if greater depth
-    return SelectorEngine.find(selector, this._config.parent).filter(elem => !children.includes(elem))
+    return SelectorEngine.find(selector, this._config.parent).filter(element => !children.includes(element))
   }
 
   _addAriaAndCollapsedClass(triggerArray, isOpen) {
@@ -248,25 +246,20 @@ class Collapse extends BaseComponent {
       return
     }
 
-    for (const elem of triggerArray) {
-      if (isOpen) {
-        elem.classList.remove(CLASS_NAME_COLLAPSED)
-      } else {
-        elem.classList.add(CLASS_NAME_COLLAPSED)
-      }
-
-      elem.setAttribute('aria-expanded', isOpen)
+    for (const element of triggerArray) {
+      element.classList.toggle(CLASS_NAME_COLLAPSED, !isOpen)
+      element.setAttribute('aria-expanded', isOpen)
     }
   }
 
   // Static
   static jQueryInterface(config) {
-    return this.each(function () {
-      const _config = {}
-      if (typeof config === 'string' && /show|hide/.test(config)) {
-        _config.toggle = false
-      }
+    const _config = {}
+    if (typeof config === 'string' && /show|hide/.test(config)) {
+      _config.toggle = false
+    }
 
+    return this.each(function () {
       const data = Collapse.getOrCreateInstance(this, _config)
 
       if (typeof config === 'string') {
@@ -290,10 +283,7 @@ EventHandler.on(document, EVENT_CLICK_DATA_API, SELECTOR_DATA_TOGGLE, function (
     event.preventDefault()
   }
 
-  const selector = getSelectorFromElement(this)
-  const selectorElements = SelectorEngine.find(selector)
-
-  for (const element of selectorElements) {
+  for (const element of SelectorEngine.getMultipleElementsFromSelector(this)) {
     Collapse.getOrCreateInstance(element, { toggle: false }).toggle()
   }
 })
